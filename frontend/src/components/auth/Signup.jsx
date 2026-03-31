@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { User, Mail, Lock, KeyRound, UserPlus, Shield } from "lucide-react";
+import { signup } from "../../api/axios";
+import toast from "react-hot-toast";
 
 function Signup() {
     const [loading, setLoading] = useState(false);
@@ -19,8 +21,18 @@ function Signup() {
         return value === password || "Passwords do not match";
     };
 
-    const onSubmit = (data) => {
-        console.log(data)
+    const onSubmit = async (data) => {
+        try {
+            const res = await signup(data);
+            Navigate("/dashboard");
+        } catch (error) {
+            console.error(error);
+            toast.error(
+                error?.response?.data?.message || "Login failed ❌"
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -34,7 +46,7 @@ function Signup() {
                         <p className="text-slate-400 text-sm mt-2">Create your account to start streaming.</p>
                     </div>
 
-                    {/* Fullname */}
+                    {/* username */}
                     <div className="space-y-1">
                         <label className="text-sm font-medium text-slate-300">Full Name</label>
                         <div className="relative">
@@ -45,10 +57,10 @@ function Signup() {
                                 type="text"
                                 placeholder="John Doe"
                                 className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                                {...register("fullname", { required: true })}
+                                {...register("username", { required: true })}
                             />
                         </div>
-                        {errors.fullname && <span className="text-red-400 text-xs">Full name is required</span>}
+                        {errors.username && <span className="text-red-400 text-xs">Full name is required</span>}
                     </div>
 
                     {/* Email */}
@@ -120,9 +132,9 @@ function Signup() {
                                 {...register("role", { required: "Please select a role" })}
                             >
                                 <option value="" className="bg-slate-950">Select a role</option>
-                                <option value="VIEWER" className="bg-slate-950">Viewer</option>
-                                <option value="EDITOR" className="bg-slate-950">Editor</option>
-                                <option value="ADMIN" className="bg-slate-950">Admin</option>
+                                <option value="viewer" className="bg-slate-950">Viewer</option>
+                                <option value="editor" className="bg-slate-950">Editor</option>
+                                <option value="admin" className="bg-slate-950">Admin</option>
                             </select>
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <svg className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

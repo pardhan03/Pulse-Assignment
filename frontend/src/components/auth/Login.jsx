@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, LogIn } from "lucide-react";
 import toast from "react-hot-toast";
+import Loading from "../common/Loading";
+import { login } from "../../api/axios";
 
 function Login() {
   const [loading, setLoading] = useState(false);
@@ -14,8 +16,21 @@ function Login() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data)
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true);
+
+      const res = await login(data);
+      toast.success("Login successful");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error?.response?.data?.message || "Login failed ❌"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
 

@@ -35,18 +35,25 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('save', async function(next) {
+    // const user = this;
+    // if (!user.isModified('password')) {
+    //     return next();
+    // }
+
+    // try {
+    //     const hashedPassword = await bcrypt.genSalt(10);
+    //     user.password = await bcrypt.hash(user.password, hashedPassword);
+    //     next();
+    // } catch (error) {
+    //     return next(error);
+    // }
     const user = this;
     if (!user.isModified('password')) {
-        return next();
+        return; // Just return, don't call next()
     }
 
-    try {
-        const hashedPassword = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, hashedPassword);
-        next();
-    } catch (error) {
-        return next(error);
-    }
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
 });
 
 // compare the stored hashed of the user password
@@ -55,7 +62,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
         const isMatch = await bcrypt.compare(candidatePassword, this.password);
         return isMatch;
     } catch (error) {
-        return error;
+        throw error;
     }
 };
 

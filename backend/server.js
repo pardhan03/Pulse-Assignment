@@ -6,19 +6,19 @@ import databaseConnection from "./database/database.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // CORS configuration - must be before other middleware
 const corsOptions = {
-    origin: ["*"],
-    methods: ["*"],
-    credentials: true
-  };
-
+  origin: "http://localhost:5174", // your frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
 // Apply CORS first
 const app = express();
 
 app.use(cors(corsOptions));
+app.options('/', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
