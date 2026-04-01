@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration - must be before other middleware
 const corsOptions = {
-  origin: "http://localhost:5173", // your frontend URL
+  origin: "http://localhost:5173",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
 };

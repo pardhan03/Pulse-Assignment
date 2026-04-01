@@ -4,7 +4,6 @@ import fsPromises from 'fs/promises';
 import { getSocketInstance } from "../SocketIO/socket.js";
 import { analyzeVideo } from '../services/videoAnalyzer.js';
 import { extractdata } from '../services/videoEngine.js';
-import jwt from 'jsonwebtoken';
 
 export const uploadVideoHandler = async (req, res) => {
     try {
@@ -131,7 +130,11 @@ export const getVideosHandler = async (req, res) => {
     try {
         const { status, sensitivityFlag, search } = req.query;
 
-        const query = { userId: req.user._id };
+        let query = {};
+
+        if (req.user.role !== "admin") {
+            query.userId = req.user._id;
+        }
 
         if (status) query.status = status;
         if (sensitivityFlag) query.sensitivityFlag = sensitivityFlag;
@@ -248,10 +251,12 @@ export const streamVideoHandler = async (req, res) => {
 
 export const deleteVideoHandler = async (req, res) => {
     try {
-        const video = await Video.findOne({
-            _id: req.params.id,
-            userId: req.user._id
-        });
+        let query = { _id: req.params.id };
+        if (req.user.role !== "admin") {
+            query.userId = req.user._id;
+        }
+
+        const video = await Video.findOne(query);
 
         if (!video) {
             return res.status(404).json({ success: false, message: 'Video not found' });
@@ -278,9 +283,12 @@ export const updateVideoHandler = async (req, res) => {
     try {
         const { description } = req.body;
 
-        const video = await Video.findOne({
-            _id: req.params.id,
-        });
+        let query = { _id: req.params.id };
+        if (req.user.role !== "admin") {
+            query.userId = req.user._id;
+        }
+
+        const video = await Video.findOne(query);
 
         if (!video) {
             return res.status(404).json({ success: false, message: 'Video not found' });

@@ -20,7 +20,6 @@ router.use(auth);
 
 router.post(
     '/upload',
-    checkRole('editor', 'admin'),
     upload.single('video'),
     uploadVideoHandler
 );
