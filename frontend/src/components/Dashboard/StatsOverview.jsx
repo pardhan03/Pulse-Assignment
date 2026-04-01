@@ -4,121 +4,21 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { getUsreStats } from "../../api/axios";
 
-export const DUMMY_USERS = [
-    {
-        _id: "u101",
-        fullname: "Aryan Malhotra",
-        username: "aryan_admin",
-        email: "aryan.m@streamguard.io",
-        role: "admin",
-        isActive: true,
-        joinedDate: "2023-11-12",
-        avatarColor: "bg-purple-500",
-        lastLogin: "2 hours ago"
-    },
-    {
-        _id: "u102",
-        fullname: "Sanya Iyer",
-        username: "sanya_edit",
-        email: "s.iyer@content.com",
-        role: "editor",
-        isActive: true,
-        joinedDate: "2024-01-05",
-        avatarColor: "bg-green-500",
-        lastLogin: "5 mins ago"
-    },
-    {
-        _id: "u103",
-        fullname: "Rohan Das",
-        username: "rohan_v",
-        email: "rohan.das@gmail.com",
-        role: "viewer",
-        isActive: true,
-        joinedDate: "2024-02-20",
-        avatarColor: "bg-yellow-500",
-        lastLogin: "Yesterday"
-    },
-    {
-        _id: "u104",
-        fullname: "Ishaan Verma",
-        username: "iverma_7",
-        email: "ishaan.v@enterprise.in",
-        role: "admin",
-        isActive: true,
-        joinedDate: "2023-12-01",
-        avatarColor: "bg-blue-500",
-        lastLogin: "1 day ago"
-    },
-    {
-        _id: "u105",
-        fullname: "Ananya Reddy",
-        username: "ananya_r",
-        email: "ananya.reddy@media.co",
-        role: "editor",
-        isActive: false, // Testing the "Inactive" UI state
-        joinedDate: "2024-03-10",
-        avatarColor: "bg-pink-500",
-        lastLogin: "3 weeks ago"
-    },
-    {
-        _id: "u106",
-        fullname: "Kabir Singh",
-        username: "ksingh_view",
-        email: "kabir.s@outlook.com",
-        role: "viewer",
-        isActive: true,
-        joinedDate: "2024-03-15",
-        avatarColor: "bg-orange-500",
-        lastLogin: "Just now"
-    }
-];
-
-export const DUMMY_VIDEOS = [
-    {
-        _id: "v201",
-        originalName: "Security_Protocol_Brief.mp4",
-        status: "completed",
-        sensitivity: "safe",
-        size: 45200000, // 43.1 MB
-        progress: 100,
-        createdAt: "2024-03-25T10:00:00Z",
-        uploader: "Sanya Iyer"
-    },
-    {
-        _id: "v202",
-        originalName: "Raw_Footage_Unit_B.mov",
-        status: "processing",
-        sensitivity: "pending",
-        size: 125000000, // 119.2 MB
-        progress: 65,
-        createdAt: "2024-03-28T14:30:00Z",
-        uploader: "Ananya Reddy"
-    },
-    {
-        _id: "v203",
-        originalName: "Leaked_Internal_Demo.mp4",
-        status: "completed",
-        sensitivity: "flagged",
-        size: 82000000, // 78.2 MB
-        progress: 100,
-        createdAt: "2024-03-27T09:15:00Z",
-        uploader: "Sanya Iyer"
-    }
-];
-
 const StatsOverview = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const fetchStatsData = async () => {
         try {
-        const response = await getUsreStats();
-        setData(response.data.data.stats);
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setLoading(false);
-      }
+            const response = await getUsreStats();
+            if(response?.data){
+                setData(response.data.data.stats);
+            }
+        } catch (error) {
+            console.error('Failed to fetch stats:', error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {
@@ -126,15 +26,17 @@ const StatsOverview = () => {
     }, []);
 
     const stats = useMemo(() => {
+        if (!data) return [];
+
         return [
-            { key: "total", title: "Total Videos", value: DUMMY_VIDEOS.length, icon: 'Video' },
-            { key: "processing", title: "Processing", value: DUMMY_VIDEOS.filter(v => v.status === 'processing').length, icon: 'Settings' },
-            { key: "completed", title: "Completed", value: DUMMY_VIDEOS.filter(v => v.status === 'completed').length, icon: 'CheckCircle' },
-            { key: "failed", title: "Failed", value: 0, icon: 'XCircle' }, // Default 0
-            { key: "safe", title: "Safe", value: DUMMY_VIDEOS.filter(v => v.sensitivity === 'safe').length, icon: 'Shield' },
-            { key: "flagged", title: "Flagged", value: DUMMY_VIDEOS.filter(v => v.sensitivity === 'flagged').length, icon: 'AlertTriangle' },
+            { key: "total", title: "Total Videos", value: data?.totalVideos },
+            { key: "processing", title: "Processing", value: data?.processingVideos },
+            { key: "completed", title: "Completed", value: data?.completedVideos },
+            { key: "failed", title: "Failed", value: data?.failedVideos },
+            { key: "safe", title: "Safe", value: data?.safeVideos },
+            { key: "flagged", title: "Flagged", value: data?.flaggedVideos },
         ];
-    }, []);
+    }, [data]);
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">

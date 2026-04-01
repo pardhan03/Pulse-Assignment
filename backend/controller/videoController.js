@@ -7,7 +7,6 @@ import { extractdata } from '../services/videoEngine.js';
 import jwt from 'jsonwebtoken';
 
 export const uploadVideoHandler = async (req, res) => {
-    console.log('called teh upload video handler of the ')
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -199,7 +198,6 @@ export const streamVideoHandler = async (req, res) => {
         if (!token) {
             return res.status(401).json({ message: 'Token required' });
         }
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const video = await Video.findOne({
             _id: id,
         });

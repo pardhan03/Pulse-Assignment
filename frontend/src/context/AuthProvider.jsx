@@ -1,14 +1,11 @@
 import React, { createContext, useContext, useState } from "react";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { signup, login } from "../api/axios";
 import { initializeSocket } from "../SocketIO/socket";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const navigate = useNavigate();
-
     const [authUser, setAuthUser] = useState(null);
     const [token, setToken] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -68,7 +65,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setToken(null);
-        setUser(null);
+        setAuthUser(null);
     };
 
     useEffect(() => {
@@ -76,7 +73,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ authUser, token, loading, handleRegister, handleLogin, handleLogout }}>
+        <AuthContext.Provider value={{ authUser, setAuthUser, token, loading, handleRegister, handleLogin, handleLogout }}>
             {children}
         </AuthContext.Provider>
     );

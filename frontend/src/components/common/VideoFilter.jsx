@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, XCircle } from 'lucide-react';
+import { Search, XCircle } from 'lucide-react';
 import { VIDEO_STATUS, SENSITIVITY_FLAG } from '../../utils/constant';
 
 
@@ -63,11 +63,7 @@ const VideoFilters = ({ filters, onFilterChange }) => {
           <button
             onClick={() => onFilterChange({})}
             disabled={false}
-            className={`p-2.5 rounded-lg border transition-all duration-200 ${
-              false 
-              ? 'border-red-500/50 text-red-400 hover:bg-red-500/10' 
-              : 'border-slate-700 text-slate-600 cursor-not-allowed opacity-50'
-            }`}
+            className={`p-2.5 rounded-lg border transition-all duration-200 cursor-pointer`}
             title="Clear all filters"
           >
             <XCircle size={22} />

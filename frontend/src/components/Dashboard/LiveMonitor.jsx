@@ -1,8 +1,5 @@
-import { useEffect, useState } from 'react';
 import { ProgressBar } from '../common/ProgressBar';
-// import { StatusBadge } from '../common/StatusBadge';
-import { Loader2, CheckCircle2, Shield, Activity } from 'lucide-react';
-import { useSocket } from '../../context/SocketProvider';
+import { Loader2, CheckCircle2, Activity } from 'lucide-react';
 
 export const LiveMonitor = ({ processingVideos }) => {
 
@@ -74,26 +71,8 @@ export const LiveMonitor = ({ processingVideos }) => {
                 </div>
               ))}
             </div>
-
-            {/* Sensitivity Analysis Result (Renamed to 'sensitivity') */}
-            {/* {video.video?.sensitivity && (
-              <div className="mt-4 pt-4 border-t border-slate-800/50 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
-                  <Shield size={12} /> Guard Scan:
-                </div>
-                <StatusBadge type="sensitivity" value={video.video.sensitivity} />
-              </div>
-            )} */}
           </div>
         ))}
-      </div>
-
-      {/* Real-time Indicator Footer */}
-      <div className="mt-6 pt-4 border-t border-slate-700/30">
-        <div className="flex items-center justify-center gap-3 text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-          Live Data Stream Active
-        </div>
       </div>
     </div>
   );

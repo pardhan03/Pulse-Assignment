@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { LayoutDashboard, Settings, LogOut, User, AlertTriangle, ShieldCheck, Loader2, Video, Users, HardDrive } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Settings, LogOut, User, Users } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
 
 const SidebarItem = ({ icon: Icon, text, to }) => {
@@ -23,15 +22,9 @@ const SidebarItem = ({ icon: Icon, text, to }) => {
 
 
 const Layout = ({ children }) => {
-    const { authUser, setAuthUser } = useAuth();
-    const navigate= useNavigate();
-
+    const { authUser, handleLogout } = useAuth();
     const logout = () => {
-        console.log('called the logout')
-        // Clear auth data from localStorage
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        setAuthUser(null);
+        handleLogout()
         window.location.href = "/login";
     };
 

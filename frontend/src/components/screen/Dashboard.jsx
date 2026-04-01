@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Upload, Play, AlertTriangle, CheckCircle, Loader2, Edit3, Check, X } from 'lucide-react';
 import UploadModal from './UploadModal';
 import { useAuth } from '../../context/AuthProvider';
@@ -8,6 +8,7 @@ import VideoFilters from '../common/VideoFilter';
 import { LiveMonitor } from '../Dashboard/LiveMonitor';
 import { useSocket } from '../../context/SocketProvider';
 import { deleteVideo, editVideo, getAllVideos } from '../../api/axios';
+import toast from "react-hot-toast";
 
 const StatusBadge = ({ status, sensitivity }) => {
     if (status === 'processing') {
@@ -59,6 +60,8 @@ const Dashboard = () => {
     const [playingVideo, setPlayingVideo] = useState(null);
 
     const [processingVideos, setProcessingVideos] = useState([]);
+
+    const completedVideosRef = useRef(new Set());
 
     const filteredVideos = videos.filter((video) => {
         const searchMatch =
@@ -126,6 +129,32 @@ const Dashboard = () => {
         }));
         setProcessingVideos(videos);
     }, [processingUpdates]);
+
+    useEffect(() => {
+        if (!processingVideos.length) return;
+
+        processingVideos.forEach((video) => {
+            const isCompleted =
+                video.progress === 100 || video.status === "completed";
+
+            const alreadyNotified = completedVideosRef.current.has(video.videoId);
+
+            if (isCompleted && !alreadyNotified) {
+                toast.success(`Processing complete: ${video.filename || 'Video'}`);
+
+                completedVideosRef.current.add(video.videoId);
+            }
+        });
+
+        const allCompleted = processingVideos.every(
+            (video) => video.progress === 100 || video.status === "completed"
+        );
+
+        if (allCompleted) {
+            handleGetAllVideos();
+            setProcessingVideos([]);
+        }
+    }, [processingVideos]);
 
     useEffect(() => {
         handleGetAllVideos()
