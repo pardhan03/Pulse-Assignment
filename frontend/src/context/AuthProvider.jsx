@@ -37,9 +37,9 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', newToken);
             localStorage.setItem('user', JSON.stringify(newUser));
 
-            setAuthUser(user);
+            setAuthUser(newUser);
             setToken(newToken);
-            initializeSocket(token)
+            initializeSocket(newToken)
             return { success: true };
         } catch (err) {
             console.log('Error while signup:', err)
@@ -52,9 +52,9 @@ export const AuthProvider = ({ children }) => {
             const { token: newToken, user: newUser } = response?.data?.data;
             localStorage.setItem('token', newToken);
             localStorage.setItem('user', JSON.stringify(newUser));
-            setAuthUser(user);
+            setAuthUser(newUser);
             setToken(newToken);
-            initializeSocket(token)
+            initializeSocket(newToken)
             return { success: true };
         } catch (err) {
             console.log('Error while login:', err)
