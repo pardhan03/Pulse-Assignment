@@ -4,7 +4,7 @@ const VideoPlayer = ({ video, onClose }) => {
   const [quality, setQuality] = useState("original");
   const videoRef = useRef(null);
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
   useEffect(() => {
     if (videoRef.current) {
@@ -15,7 +15,7 @@ const VideoPlayer = ({ video, onClose }) => {
       if (quality !== "original") params.append("q", quality);
       if (token) params.append("token", token);
       const queryString = params.toString() ? `?${params.toString()}` : "";
-      videoRef.current.src = `${API_BASE}/api/v1/video/${video._id}/stream${queryString}`;
+      videoRef.current.src = `${BASE_URL}/v1/video/${video._id}/stream${queryString}`;
       videoRef.current.load();
       videoRef.current.play().catch(() => {});
     }
