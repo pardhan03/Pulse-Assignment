@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Upload, Play, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
 import UploadModal from './UploadModal';
 import { useAuth } from '../../context/AuthProvider';
 import VideoPlayer from './VideoPlayer';
 import StatsOverview from '../Dashboard/StatsOverview';
+import VideoFilters from '../common/VideoFilter';
+import { LiveMonitor } from '../Dashboard/LiveMonitor';
+import { useSocket } from '../../context/SocketProvider';
+import { getAllVideos } from '../../api/axios';
 
-const StatusBadge = ({ status, sensitivity, progress }) => {
+const StatusBadge = ({ status, sensitivity }) => {
     if (status === 'processing') {
         return (
             <div className="flex items-center text-yellow-500 text-xs bg-yellow-500/10 px-2 py-1 rounded-full w-fit">
-                <Loader2 size={12} className="animate-spin mr-1" />
-                Processing {progress || 0}%
+                <Loader2 size={12} className="mr-1" />
+                Processing
             </div>
         );
     }
@@ -32,7 +36,6 @@ const StatusBadge = ({ status, sensitivity, progress }) => {
             </div>
         );
     }
-
     // Default case for other statuses
     return (
         <div className="flex items-center text-slate-400 text-xs bg-slate-500/10 px-2 py-1 rounded-full w-fit">
@@ -42,10 +45,55 @@ const StatusBadge = ({ status, sensitivity, progress }) => {
 };
 
 const Dashboard = () => {
+    const { authUser } = useAuth();
+    const { processingUpdates } = useSocket();
     const [videos, setVideos] = useState([]);
+    const [filters, setFilters] = useState({});
+
     const [isUploadModalOpen, setUploadModalOpen] = useState(false);
     const [playingVideo, setPlayingVideo] = useState(null);
-    const { authUser } = useAuth();
+
+    const [processingVideos, setProcessingVideos] = useState([]);
+
+    const filteredVideos = videos.filter((video) => {
+        const searchMatch =
+            !filters.search ||
+            video.originalName?.toLowerCase().includes(filters.search.toLowerCase()) ||
+            video.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
+            video._id?.toLowerCase().includes(filters.search.toLowerCase());
+
+        const statusMatch =
+            !filters.status || video.status === filters.status;
+
+        const sensitivityMatch =
+            !filters.sensitivity || video.sensitivityFlag === filters.sensitivity;
+
+        return searchMatch && statusMatch && sensitivityMatch;
+    });
+
+    const handleGetAllVideos = async() => {
+        try {
+            const res = await getAllVideos()
+            if(res?.data){
+                console.log('reached inside it', res?.data)
+                setVideos(res?.data?.data?.videos)
+            }
+        } catch (error) {
+            console.log('Error while fetching videos:', error)
+        }
+    }
+
+    useEffect(() => {
+        const videos = Object.entries(processingUpdates).map(([videoId, update]) => ({
+            videoId,
+            ...update
+        }));
+        setProcessingVideos(videos);
+    }, [processingUpdates]);
+
+    useEffect(() => {
+        handleGetAllVideos()
+    }, [])
 
     return (
         <>
@@ -63,7 +111,12 @@ const Dashboard = () => {
                         <span>Upload Video</span>
                     </button>
                 </div>
-                <StatsOverview/>
+                <StatsOverview />
+                <VideoFilters filters={filters} onFilterChange={setFilters} />
+                {processingVideos?.length !== 0 ?
+                    <LiveMonitor processingVideos={processingVideos} />
+                    : null
+                }
                 <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-slate-900 text-slate-400 uppercase text-xs font-semibold">
@@ -86,7 +139,7 @@ const Dashboard = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                videos.map((video) => (
+                                filteredVideos?.map((video) => (
                                     <tr key={video._id} className="hover:bg-slate-700/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center space-x-3">
@@ -105,7 +158,7 @@ const Dashboard = () => {
                                         <td className="px-6 py-4">
                                             <StatusBadge
                                                 status={video.status}
-                                                sensitivity={video.sensitivity}
+                                                sensitivity={video.sensitivityFlag}
                                                 progress={video.progress}
                                             />
                                         </td>
@@ -129,7 +182,6 @@ const Dashboard = () => {
             {isUploadModalOpen && (
                 <UploadModal
                     onClose={() => setUploadModalOpen(false)}
-                    // onUpload={handleUpload}
                 />
             )}
             {playingVideo && (

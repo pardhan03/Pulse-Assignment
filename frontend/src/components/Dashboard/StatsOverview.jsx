@@ -1,5 +1,8 @@
 import { useMemo } from "react";
 import StatsCard from "../common/StatsCard";
+import { useState } from "react";
+import { useEffect } from "react";
+import { getUsreStats } from "../../api/axios";
 
 export const DUMMY_USERS = [
     {
@@ -104,17 +107,25 @@ export const DUMMY_VIDEOS = [
 ];
 
 const StatsOverview = () => {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const fetchStatsData = async () => {
+        try {
+        const response = await getUsreStats();
+        setData(response.data.data.stats);
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    useEffect(() => {
+        fetchStatsData();
+    }, []);
+
     const stats = useMemo(() => {
-        // if (type === "user") {
-        //     return [
-        //         { key: "total", title: "Total Users", value: DUMMY_USERS.length, footer: "Registered accounts" },
-        //         { key: "admin", title: "Admins", value: DUMMY_USERS.filter(u => u.role === 'admin').length },
-        //         { key: "editor", title: "Editors", value: DUMMY_USERS.filter(u => u.role === 'editor').length },
-        //         { key: "viewer", title: "Viewers", value: DUMMY_USERS.filter(u => u.role === 'viewer').length },
-        //     ];
-        // }
-        
-        // Video Stats (Matches your 1st image)
         return [
             { key: "total", title: "Total Videos", value: DUMMY_VIDEOS.length, icon: 'Video' },
             { key: "processing", title: "Processing", value: DUMMY_VIDEOS.filter(v => v.status === 'processing').length, icon: 'Settings' },

@@ -3,10 +3,10 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, LogIn } from "lucide-react";
 import toast from "react-hot-toast";
-import Loading from "../common/Loading";
-import { login } from "../../api/axios";
+import { useAuth } from "../../context/AuthProvider";
 
 function Login() {
+  const { handleLogin } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -20,7 +20,7 @@ function Login() {
     try {
       setLoading(true);
 
-      const res = await login(data);
+      await handleLogin(data);
       toast.success("Login successful");
       navigate("/dashboard");
     } catch (error) {

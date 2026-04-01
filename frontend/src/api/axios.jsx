@@ -9,7 +9,6 @@ const api = axios.create({
     },
 });
 
-// Request interceptor - automatically add Authorization header to all requests
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
@@ -23,7 +22,6 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor - handle 401 errors (token expired/invalid)
 api.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -37,20 +35,35 @@ api.interceptors.response.use(
     }
 );
 
-export const signup = async (data) => {
-    const res = await api.post("/v1/signup", data);
-
-    localStorage.setItem("token", res.data.data.token);
-    localStorage.setItem("user", JSON.stringify(res.data.data.user));
-    return res.data;
-};
+export const signup = (data) => {
+    return api.post("/v1/auth/signup", data);
+}
 
 export const login = async (data) => {
-    const res = await api.post("/v1/login", data);
-    console.log(res, '::::::::::::::::::::')
-    localStorage.setItem("token", res.data.data.token);
-    localStorage.setItem("user", JSON.stringify(res.data.data.user));
-    return res.data;
+    return api.post("/v1/auth/login", data);
 };
+
+export const getAllUsers = () => {
+    return api.get("v1/users");
+};
+
+export const getUsreStats = () => {
+    return api.get('/v1/users/stats/')
+}
+
+export const updateUserRole = (id, role) => {
+    return api.patch(`/v1/users/${id}/role`, { role })
+}
+
+export const getAllVideos = () => {
+    return api.get("v1/video");
+};
+
+export const uploadVideo = (formData, onUploadProgress) => {
+    return api.post('/v1/video/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress
+    })
+}
 
 export default api;

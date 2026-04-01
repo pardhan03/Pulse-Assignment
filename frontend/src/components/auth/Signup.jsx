@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, KeyRound, UserPlus, Shield } from "lucide-react";
 import { signup } from "../../api/axios";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthProvider";
 
 function Signup() {
+    const { handleRegister } = useAuth();
+
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const {
         register,
@@ -23,12 +27,12 @@ function Signup() {
 
     const onSubmit = async (data) => {
         try {
-            const res = await signup(data);
-            Navigate("/dashboard");
+            await handleRegister(data);
+            navigate("/dashboard");
         } catch (error) {
             console.error(error);
             toast.error(
-                error?.response?.data?.message || "Login failed ❌"
+                error?.response?.data?.message || "Login failed"
             );
         } finally {
             setLoading(false);

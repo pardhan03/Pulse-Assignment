@@ -1,94 +1,36 @@
 import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthProvider";
-import { Save, X, UserCog, ShieldCheck } from "lucide-react";
-
-// Dummy Users (Matching your Admin User Management table)
-export const DUMMY_USERS = [
-    {
-        _id: "u1",
-        fullname: "Aditya Sharma",
-        username: "aditya_s",
-        email: "aditya@streamguard.com",
-        role: "admin",
-        isActive: true,
-        createdAt: "2024-01-15T10:30:00Z"
-    },
-    {
-        _id: "u2",
-        fullname: "Sarah Jenkins",
-        username: "sjenkins",
-        email: "sarah.j@outlook.com",
-        role: "editor",
-        isActive: true,
-        createdAt: "2024-02-10T14:20:00Z"
-    },
-    {
-        _id: "u3",
-        fullname: "Michael Chen",
-        username: "mchen_viewer",
-        email: "m.chen@gmail.com",
-        role: "viewer",
-        isActive: true,
-        createdAt: "2024-03-01T09:45:00Z"
-    },
-    {
-        _id: "u4",
-        fullname: "Jessica Williams",
-        username: "jess_w",
-        email: "jessica.w@techcorp.io",
-        role: "viewer",
-        isActive: false,
-        createdAt: "2024-03-05T11:00:00Z"
-    }
-];
-
-// Dummy Videos (Matching your Dashboard & StatusBadge logic)
-export const DUMMY_VIDEOS = [
-    {
-        _id: "v1",
-        originalName: "Project_Presentation_Q1.mp4",
-        status: "completed",
-        sensitivity: "safe",
-        size: 52428800, // 50MB
-        progress: 100,
-        assignedUsers: ["u3", "u4"],
-        createdAt: "2024-03-20T16:00:00Z"
-    },
-    {
-        _id: "v2",
-        originalName: "Marketing_Ad_Draft_v2.mov",
-        status: "processing",
-        sensitivity: "pending",
-        size: 157286400, // 150MB
-        progress: 45,
-        assignedUsers: [],
-        createdAt: "2024-03-21T08:30:00Z"
-    },
-    {
-        _id: "v3",
-        originalName: "Internal_Security_Leak_Test.mp4",
-        status: "completed",
-        sensitivity: "flagged",
-        size: 89128960, // 85MB
-        progress: 100,
-        assignedUsers: ["u1"],
-        createdAt: "2024-03-19T12:15:00Z"
-    }
-];
+import { Save, X, UserCog } from "lucide-react";
+import { getAllUsers, updateUserRole } from "../../api/axios";
+import Loading from "../common/Loading";
+import { DUMMY_VIDEOS } from "../../utils/constant";
 
 const Admin = () => {
     const { authUser } = useAuth();
-    const [users, setUsers] = useState(DUMMY_USERS);
+    const [users, setUsers] = useState(null);
     const [videos, setVideos] = useState(DUMMY_VIDEOS);
     const [loadingUsers, setLoadingUsers] = useState(false);
 
     const [pendingRoles, setPendingRoles] = useState({});
     const [savingUserId, setSavingUserId] = useState(null);
 
+    const handleGetAllUsers = async () => {
+        setLoadingUsers(true);
+        try {
+            const res= await getAllUsers()
+            if(res?.data?.data) {
+                setUsers(res?.data?.data?.users)
+            }
+        } catch (error) {
+            console.log('Error while fetching all users:', error)
+        } finally {
+            setLoadingUsers(false);
+        }
+    }
+
     const roles = useMemo(() => ["viewer", "editor", "admin"], []);
 
-    // Handle dropdown change
     const handleRoleChange = (userId, newRole) => {
         const originalUser = users.find(u => u._id === userId);
 
@@ -113,13 +55,9 @@ const Admin = () => {
         setSavingUserId(userId);
 
         try {
-            // Replace with your actual API call
-            // await axios.patch(`/api/v1/admin/users/${userId}/role`, { role: newRole });
-
-            toast.success("Role updated successfully");
-
-            // Update local state to reflect change
+            const res = await updateUserRole(userId, newRole);
             setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+            toast.success("Role updated successfully");
             cancelChange(userId);
         } catch (error) {
             toast.error("Failed to update role");
@@ -128,15 +66,9 @@ const Admin = () => {
         }
     };
 
-    if (!authUser || authUser.role?.toLowerCase() !== "admin") {
-        return (
-            <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
-                <ShieldCheck size={48} className="mb-4 opacity-20" />
-                <p className="text-xl font-semibold text-white">Access Denied</p>
-                <p className="text-sm">Admin privileges are required to view this portal.</p>
-            </div>
-        );
-    }
+    useEffect(() => {
+        handleGetAllUsers();
+    }, [])
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -186,7 +118,7 @@ const Admin = () => {
                                                     onChange={(e) => handleRoleChange(u._id, e.target.value)}
                                                     disabled={savingUserId === u._id}
                                                     className={`appearance-none bg-slate-900 text-xs font-semibold rounded-lg px-4 py-2 pr-8 border transition-all cursor-pointer outline-none
-                            ${isEdited
+                                                            ${isEdited
                                                             ? 'border-blue-500 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                                                             : 'border-slate-700 text-slate-300 hover:border-slate-500'}`}
                                                 >

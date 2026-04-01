@@ -34,26 +34,18 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-userSchema.pre('save', async function(next) {
-    // const user = this;
-    // if (!user.isModified('password')) {
-    //     return next();
-    // }
+userSchema.pre('save', async function () {
+    try {
+        if (!this.isModified('password')) {
+            return;
+        }
 
-    // try {
-    //     const hashedPassword = await bcrypt.genSalt(10);
-    //     user.password = await bcrypt.hash(user.password, hashedPassword);
-    //     next();
-    // } catch (error) {
-    //     return next(error);
-    // }
-    const user = this;
-    if (!user.isModified('password')) {
-        return; // Just return, don't call next()
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+
+    } catch (error) {
+        throw error;
     }
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
 });
 
 // compare the stored hashed of the user password
@@ -65,8 +57,5 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
         throw error;
     }
 };
-
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
 
 export const User = mongoose.model("User", userSchema);

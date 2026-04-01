@@ -38,7 +38,6 @@ const StatsCard = ({ themeKey, title, value, footer, trending }) => {
         <div>
           <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">{title}</p>
           <h3 className="text-3xl font-bold text-white mt-1">{value}</h3>
-          {/* Only show footer if it exists to save space */}
           {footer && <p className="text-slate-500 text-[10px] mt-1">{footer}</p>}
         </div>
         <div className={`p-3 rounded-full ${theme.bgColor} ${theme.color} border ${theme.borderColor}`}>

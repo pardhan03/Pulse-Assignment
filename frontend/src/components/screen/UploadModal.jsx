@@ -1,50 +1,103 @@
 import React, { useRef, useState } from 'react';
 import { X, UploadCloud, FileVideo } from 'lucide-react';
+import { formatFileSize, VIDEO_TYPES } from '../../utils/constant';
+import { uploadVideo } from '../../api/axios';
 
-const UploadModal = ({ onClose, onUpload }) => {
-  const [file, setFile] = useState(null);
+const MAX_SIZE = 100 * 1024 * 1024;
+
+const UploadModal = ({ onClose }) => {
   const filePicker = useRef(null);
+
+  const [file, setFile] = useState(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState('');
+
+  const validateFile = (file) => {
+    if (!VIDEO_TYPES.includes(file.type)) {
+      return 'Invalid file type';
+    }
+    if (file.size > MAX_SIZE) {
+      return `Max size is ${formatFileSize(MAX_SIZE)}`;
+    }
+    return null;
+  };
 
   const handleSelectFile = (e) => {
     const selected = e.target.files[0];
-    if (selected) {
-      setFile(selected);
+    if (!selected) return;
+
+    const err = validateFile(selected);
+    if (err) {
+      setError(err);
+      return;
+    }
+
+    setFile(selected);
+    setError('');
+
+    if (!title) {
+      setTitle(selected.name.replace(/\.[^/.]+$/, ''));
     }
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      setError('Please select file');
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("video", file);
-    await onUpload(formData);
-    onClose();
+    formData.append('video', file);
+    formData.append('title', title);
+    formData.append('description', description);
+
+    try {
+      const response = await uploadVideo(formData, (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        setUploadProgress(percentCompleted);
+      });
+
+      setFile(null);
+      setTitle('');
+      setDescription('');
+      setUploadProgress(0);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      if (onUploadComplete) {
+        onUploadComplete(response.data.data.video);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Upload failed. Please try again.');
+    } finally {
+      onClose();
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg">
         <div className="flex justify-between items-center p-6 border-b border-slate-800">
-          <h3 className="text-lg font-bold text-white">Upload New Video</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-            <X size={20} />
+          <h3 className="text-white font-bold">Upload Video</h3>
+          <button onClick={onClose}>
+            <X className="text-slate-400 hover:text-white" />
           </button>
         </div>
-
-        <div className="p-6">
+        <div className="p-6 space-y-4">
           {!file ? (
-            <div
-              className="border-2 border-dashed border-slate-600 rounded-xl p-10 text-center"
-            >
-              <UploadCloud className="mx-auto text-blue-500 mb-4" size={48} />
-              <p className="text-lg font-medium text-white mb-2">Select files to upload</p>
-              <p className="text-slate-400 text-sm mb-6">MP4, WEBM, or OGG (Max 50MB)</p>
-
+            <div className="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center">
+              <UploadCloud className="mx-auto text-blue-500 mb-3" size={40} />
               <button
                 onClick={() => filePicker.current.click()}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-medium transition-colors"
+                className="bg-blue-600 px-4 py-2 rounded-md text-white"
               >
-                Select Files
+                Select File
               </button>
 
               <input
@@ -56,35 +109,39 @@ const UploadModal = ({ onClose, onUpload }) => {
               />
             </div>
           ) : (
-            <div className="bg-slate-800 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="bg-blue-500/20 p-3 rounded-lg text-blue-500">
-                  <FileVideo size={24} />
-                </div>
-                <div>
-                  <p className="text-white font-medium text-sm">{file.name}</p>
-                  <p className="text-slate-500 text-xs">
-                    {(file.size / (1024 * 1024)).toFixed(2)} MB
-                  </p>
-                </div>
+            <div className="flex justify-between items-center bg-slate-800 p-3 rounded">
+              <div>
+                <p className="text-white text-sm">{file.name}</p>
+                <p className="text-xs text-slate-400">{formatFileSize(file.size)}</p>
               </div>
-              <button onClick={() => setFile(null)} className="text-red-400 hover:text-red-300 text-xs">
+              <button onClick={() => setFile(null)} className="text-red-400">
                 Remove
               </button>
             </div>
           )}
-        </div>
-        <div className="p-6 bg-slate-950 border-t border-slate-800 flex justify-end space-x-3">
-          <button onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-white text-sm font-medium">
-            Cancel
-          </button>
 
+          {/* Title */}
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title"
+            className="w-full bg-slate-800 px-3 py-2 rounded text-white"
+          />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description"
+            className="w-full bg-slate-800 px-3 py-2 rounded text-white"
+          />
+
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+        </div>
+        <div className="p-6 flex justify-end gap-3 border-t border-slate-800">
+          <button onClick={onClose} className="text-slate-400">Cancel</button>
           <button
-            disabled={!file}
             onClick={handleUpload}
-            className={`px-6 py-2 rounded-lg text-white text-sm font-medium transition-colors ${
-              !file ? 'bg-slate-700 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-            }`}
+            disabled={!file}
+            className="bg-blue-600 px-5 py-2 rounded text-white disabled:opacity-50"
           >
             Start Processing
           </button>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LayoutDashboard, Settings, LogOut, User, AlertTriangle, ShieldCheck, Loader2, Video, Users, HardDrive } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
 
 const SidebarItem = ({ icon: Icon, text, to }) => {
@@ -23,16 +23,18 @@ const SidebarItem = ({ icon: Icon, text, to }) => {
 
 
 const Layout = ({ children }) => {
-    const [currentPage, setCurrentPage] = useState('dashboard');
     const { authUser, setAuthUser } = useAuth();
-    console.log(authUser, ':::::::::::::')
+    const navigate= useNavigate();
+
     const logout = () => {
+        console.log('called the logout')
         // Clear auth data from localStorage
         localStorage.removeItem("user");
         localStorage.removeItem("token");
         setAuthUser(null);
         window.location.href = "/login";
     };
+
     return (
         <div className="flex h-screen bg-slate-900 text-slate-200 font-sans">
             <aside className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col">

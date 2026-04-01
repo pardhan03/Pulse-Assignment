@@ -1,10 +1,13 @@
 import { Router } from 'express'
-import { login, register} from '../../controller/authController.js'
+import authRoutes from './auth.routes.js'
+import userRoutes from './user.routes.js'
+import videoRoutes from './video.routes.js'
 
 const router = Router();
 
-router.post('/login', login);
-router.post('/signup', register);
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
+router.use('/video', videoRoutes);
 
 export default router;
 

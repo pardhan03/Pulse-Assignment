@@ -1,8 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
+import { useEffect } from 'react';
 
 const NotFound = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate('/dashboard');
+  }, [navigate]);
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-slate-900 text-slate-200 p-4 text-center">
       <div className="bg-slate-800 p-4 rounded-full mb-6 animate-bounce">

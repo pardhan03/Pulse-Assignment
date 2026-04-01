@@ -15,11 +15,11 @@ const VideoPlayer = ({ video, onClose }) => {
       if (quality !== "original") params.append("q", quality);
       if (token) params.append("token", token);
       const queryString = params.toString() ? `?${params.toString()}` : "";
-      videoRef.current.src = `${API_BASE}/api/video/stream/${video._id}${queryString}`;
+      videoRef.current.src = `${API_BASE}/api/v1/video/${video._id}/stream${queryString}`;
       videoRef.current.load();
       videoRef.current.play().catch(() => {});
     }
-  }, [quality, video]);
+  }, [quality, video._id]);
 
   // Handle escape key to close
   useEffect(() => {
@@ -80,7 +80,7 @@ const VideoPlayer = ({ video, onClose }) => {
         <div className="p-4 text-slate-300 text-sm">
           <div className="flex justify-between">
             <span>Status: {video.status}</span>
-            <span>Sensitivity: {video.sensitivity}</span>
+            <span>Sensitivity: {video?.sensitivityFlag}</span>
             <span>Quality: {quality}</span>
           </div>
         </div>
