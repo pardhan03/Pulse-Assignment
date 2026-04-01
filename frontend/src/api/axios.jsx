@@ -66,4 +66,12 @@ export const uploadVideo = (formData, onUploadProgress) => {
     })
 }
 
+export const editVideo = (id, data) => {
+    return api.patch(`/v1/video/${id}`, data)
+}
+
+export const deleteVideo = (id) => {
+    return api.delete(`/v1/video/${id}`)
+}
+
 export default api;

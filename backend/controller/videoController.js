@@ -278,18 +278,16 @@ export const deleteVideoHandler = async (req, res) => {
 
 export const updateVideoHandler = async (req, res) => {
     try {
-        const { title, description } = req.body;
+        const { description } = req.body;
 
         const video = await Video.findOne({
             _id: req.params.id,
-            userId: req.user._id
         });
 
         if (!video) {
             return res.status(404).json({ success: false, message: 'Video not found' });
         }
 
-        if (title) video.title = title;
         if (description) video.description = description;
 
         await video.save();
